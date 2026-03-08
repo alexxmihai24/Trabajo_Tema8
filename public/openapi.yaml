@@ -1,588 +1,436 @@
-openapi: 3.1.1
+openapi: 3.0.0
 info:
-  title: "Shop API Documentation"
-  description: |
-    # A modern REST API built with Next.js
-
-    Esta API proporciona las siguientes funcionalidades:
-
-    ## **Autenticación de usuarios**
-    - Registro de usuarios
-    - Login de usuarios
-    - Verificar estado de autenticación
-
-    ## **Productos**
-    - Crear productos
-    - Consultar productos
-    - Actualizar productos
-    - Eliminar productos
-    
-    ## **Imágenes**
-    - Subir imágenes en cualquier formato (`image/*`)
-    - Consultar imágenes subidas y sus metadatos
-    - Actualizar imágenes subidas
-    - Eliminar imágenes subidas
-
-    > **NOTA:**
-    > Las siguientes propiedades deben tener **valores únicos**: `title` y `slug` de un producto, así como el `email` de un usuario.
-    >
-    > - Si al introducir o modificar un producto obtienes un **código 409**, es porque ya existe un producto con el mismo `title` o `slug`.
-    > - Si al registrar un usuario obtienes un **código 409**, es porque ya existe un usuario con el mismo `email`.
-
-    Para más información, visita [nuestro repositorio](https://github.com/jamj2000/nxapi-shop).
-  version: "1.0.0"
-
+  title: NXAPI Shop API (Event Edition)
+  description: NXAPI Shop backend API documentation converted to manage Events using Prisma, NeonDB, and Cloudinary.
+  version: 1.0.0
+servers:
+  - url: /api
 components:
   securitySchemes:
     bearerAuth:
       type: http
       scheme: bearer
       bearerFormat: JWT
-
   schemas:
-    UserCreate:
+    User:
       type: object
-      required:
-        - email
-        - password
-        - fullName
-      properties:
-        email:
-          type: string
-          description: A valid email (unique)
-          nullable: false
-        password:
-          type: string
-        fullName:
-          type: string
-
-    UserLogin:
-      type: object
-      required:
-        - email
-        - password
-      properties:
-        email:
-          type: string
-          description: A valid email
-          nullable: false
-        password:
-          type: string
-          description: The password for this user
-          nullable: false
-
-    Product:
-      type: object
-      required:
-        - id
-        - title
-        - price
-        - description
-        - slug
-        - stock
-        - sizes
-        - gender
-        - tags
-        - images
       properties:
         id:
           type: string
-          description: Product ID
-          uniqueItems: true
-          example: cd533345-f1f3-48c9-a62e-7dc2da50c8f8
+        email:
+          type: string
+        fullName:
+          type: string
+        isActive:
+          type: boolean
+        roles:
+          type: array
+          items:
+            type: string
+    Event:
+      type: object
+      properties:
+        id:
+          type: string
         title:
           type: string
-          description: Product Title
-          uniqueItems: true
-          example: T-Shirt Teslo
-        price:
-          type: number
-          description: Product price
-          example: 0
         description:
           type: string
-          description: Product description
-          default: null
-          example: Anim reprehenderit nulla in anim mollit minim irure commodo.
+        date:
+          type: string
+          format: date-time
+        location:
+          type: string
+        price:
+          type: number
         slug:
           type: string
-          description: Product SLUG - for SEO
-          uniqueItems: true
-          example: t_shirt_teslo
-        stock:
-          type: number
-          description: Product stock
-          default: 0
-          example: 10
-        sizes:
-          type: array
-          description: Product sizes
-          items:
-            type: string
-          example:
-            - M
-            - XL
-            - XXL
-        gender:
-          type: string
-          description: Product gender
-          example: women
-        tags:
-          type: array
-          items:
-            type: string
+        capacity:
+          type: integer
         images:
           type: array
           items:
             type: string
-
-    ProductCreate:
-      type: object
-      required:
-        - title
-        - price
-        - description
-        - slug
-        - stock
-        - sizes
-        - gender
-        - tags
-        - images
-      properties:
-        title:
-          type: string
-          description: Product title (unique)
-          nullable: false
-          minLength: 1
-        price:
-          type: number
-        description:
-          type: string
-        slug:
-          type: string
-          description: Product slug (unique)
-          nullable: false
-          minLength: 1
-        stock:
-          type: number
-        sizes:
-          type: array
-          items:
-            type: string
-        gender:
-          type: string
-        tags:
-          type: array
-          items:
-            type: string
-        images:
-          type: array
-          items:
-            type: string
-
-    ProductUpdate:
+        user:
+          $ref: '#/components/schemas/User'
+    EventImage:
       type: object
       properties:
-        title:
+        id:
+          type: integer
+        url:
           type: string
-          description: Product title (unique)
-          nullable: false
-          minLength: 1
-        price:
-          type: number
-        description:
+        eventId:
           type: string
-        slug:
-          type: string
-          description: Product slug (unique)
-          nullable: false
-          minLength: 1
-        stock:
-          type: number
-        sizes:
-          type: array
-          items:
-            type: string
-        gender:
-          type: string
-        tags:
-          type: array
-          items:
-            type: string
-        images:
-          type: array
-          items:
-            type: string
 
-    ImageInfo:
-      type: object
-      properties:
-        asset_id:
-          type: string
-          nullable: false
-          example: 9dbbd654a6986807fc5329032b19877d
-        public_id:
-          type: string
-          nullable: false
-          example: file_gvfsgc
-        format:
-          type: string
-          nullable: false
-          description: The format of the image (webp, jpg, png, etc)
-          example: webp
-        resource_type:
-          type: string
-          nullable: false
-          description: The type of the resource (image, video, etc)
-          example: image
-        bytes:
-          type: number
-          nullable: false
-          description: The size of the image in bytes
-          example: 26468
-        width:
-          type: number
-          nullable: false
-          description: The width of the image in pixels
-          example: 852
-        height:
-          type: number
-          nullable: false
-          description: The height of the image in pixels
-          example: 852
-        asset_folder:
-          type: string
-          nullable: false
-          description: The folder where the image is stored
-          example: shop
-        secure_url:
-          type: string
-          format: uri
-          nullable: false
-          description: The secure URL of the image
-          example: https://res.cloudinary.com/jamunoz/image/upload/v1768483589/8528839-00-A_2_sbeihu.webp
+security:
+  - bearerAuth: []
 
 paths:
-
-  /api/auth/register:
+  /auth/register:
     post:
-      summary: Register
-      tags:
-        - Auth
+      summary: Register a new user
+      security: []
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/UserCreate"
+              type: object
+              required:
+                - email
+                - password
+                - fullName
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+                fullName:
+                  type: string
       responses:
-        "201":
-          description: Registration successful
-        "400":
+        '201':
+          description: User registered successfully
+        '400':
           description: Missing required fields
-        "409":
+        '409':
           description: User already exists
-
-  /api/auth/login:
+  
+  /auth/login:
     post:
       summary: Login
-      tags:
-        - Auth
+      security: []
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/UserLogin"
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
       responses:
-        "201":
+        '201':
           description: Login successful
-        "400":
+        '400':
           description: Missing email or password
-        "401":
-          description: Invalid credentials
-        "404":
+        '401':
+          description: Invalid password
+        '404':
           description: User not found
 
-  /api/auth/check-status:
+  /events:
     get:
-      summary: Check authentication status
-      tags:
-        - Auth
-      security:
-        - bearerAuth: []
+      summary: Get all events (paginated)
+      security: []
+      parameters:
+        - in: query
+          name: offset
+          schema:
+            type: integer
+        - in: query
+          name: limit
+          schema:
+            type: integer
       responses:
-        "200":
-          description: Check successful
-        "401":
-          description: Unauthorized / Invalid token
-        "404":
-          description: User not found
-
-  /api/products:
+        '200':
+          description: A list of events
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Event'
+        '500':
+          description: Internal server error
     post:
-      summary: Create new product
-      tags:
-        - Products
-      security:
-        - bearerAuth: []
+      summary: Create a newly listed event
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ProductCreate"
+              type: object
+              required:
+                - title
+                - description
+                - date
+                - location
+                - price
+                - slug
+                - capacity
+                - images
+              properties:
+                title:
+                  type: string
+                description:
+                  type: string
+                date:
+                  type: string
+                  format: date-time
+                location:
+                  type: string
+                price:
+                  type: number
+                slug:
+                  type: string
+                capacity:
+                  type: integer
+                images:
+                  type: array
+                  items:
+                    type: string
       responses:
-        "201":
-          description: Product was created
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Product"
-        "400":
-          description: Missing data
-        "401":
-          description: Unauthorized. Token expired or invalid.
-        "409":
-          description: Product title or slug already exists
-
-    get:
-      summary: List products
-      tags:
-        - Products
-      parameters:
-        - name: limit
-          in: query
-          required: true
-          description: How many rows do you need
-          schema:
-            type: number
-            default: 10
-        - name: offset
-          in: query
-          required: true
-          description: How many rows do you want to skip
-          schema:
-            type: number
-            default: 0
-      responses:
-        "200":
-          description: Product list
-        "500":
+        '201':
+          description: Event created successfully
+        '400':
+          description: Missing required data
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '409':
+          description: Event title or slug already exists
+        '500':
           description: Internal server error
-
-  /api/products/all/{term}:
+  
+  /events/all/{term}:
     get:
-      summary: Search products
-      tags:
-        - Products
+      summary: Search events by term (title or slug)
+      security: []
       parameters:
-        - name: term
-          in: path
+        - in: path
+          name: term
           required: true
           schema:
             type: string
       responses:
-        "200":
-          description: Search results
-        "500":
+        '200':
+          description: Successful search results
+        '500':
           description: Internal server error
 
-  /api/products/{idOrSlug}:
+  /events/{id}:
     get:
-      summary: Find product by ID or slug
-      tags:
-        - Products
+      summary: Get an event by its UUID or friendly Slug
+      security: []
       parameters:
-        - name: idOrSlug
-          in: path
+        - in: path
+          name: id
           required: true
           schema:
             type: string
+          description: Event ID or Slug
       responses:
-        "200":
-          description: Product found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Product"
-        "500":
+        '200':
+          description: The requested event details
+        '404':
+          description: Event not found
+        '500':
           description: Internal server error
-
-  /api/products/{id}:
-    patch:
-      summary: Update product
-      tags:
-        - Products
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ProductUpdate"
-      responses:
-        "200":
-          description: Product updated successfully
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Product"
-        "401":
-          description: Unauthorized. Token expired or invalid.
-        "409":
-          description: Product title or slug already exists
-    delete:
-      summary: Delete product
-      tags:
-        - Products
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          description: Product deleted successfully
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Product"
-        "401":
-          description: Unauthorized. Token expired or invalid.
-        "500":
-          description: Internal server error
-
-  /api/files/product:
-    post:
-      summary: Upload product image
-      tags:
-        - Files - Get and Upload
-      security:
-        - bearerAuth: []
-      requestBody:
-        required: true
-        content:
-          image/*:   # Cualquier imagen
-            schema:
-              type: string
-              format: binary
-              description: "Archivo de imagen (PNG, JPEG, GIF, WebP, etc.)"
-        # content:
-        #   multipart/form-data:
-        #     schema:
-        #       type: object
-        #       properties:
-        #         file:
-        #           type: string
-        #           format: binary
-        #           description: Image file (any image/*)
-      responses:
-        "201":
-          description: Uploaded
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ImageInfo"
-        "401":
-          description: Unauthorized. Token expired or invalid.
-        "500":
-          description: Internal server error
-    get:
-      summary: List images
-      tags:
-        - Files - Get and Upload
-      parameters:
-        - name: limit
-          in: query
-          required: true
-          description: How many rows do you need
-          schema:
-            type: number
-            default: 10
-      responses:
-        "200":
-          description: OK
-        "500":
-          description: Internal server error  
-
-  /api/files/product/{imageName}:
-    get:
-      summary: Get product image
-      tags:
-        - Files - Get and Upload
-      parameters:
-        - name: imageName
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          description: OK
-          # content:
-          #   application/json:
-          #     schema:
-          #       $ref: "#/components/schemas/ImageInfo"
-        "404":
-          description: Image not found
     put:
-      summary: Change product image
-      tags:
-        - Files - Get and Upload
-      security:
-        - bearerAuth: []
+      summary: Update an event details
       parameters:
-        - name: imageName
-          in: path
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: The UUID of the event
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                description:
+                  type: string
+                date:
+                  type: string
+                  format: date-time
+                location:
+                  type: string
+                price:
+                  type: number
+                slug:
+                  type: string
+                capacity:
+                  type: integer
+                images:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '200':
+          description: Event updated successfully
+        '401':
+          description: Unauthorized
+        '404':
+          description: Event not found
+        '500':
+          description: Internal server error
+    delete:
+      summary: Delete an event
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Deleted successfully
+        '401':
+          description: Unauthorized
+        '404':
+          description: Event not found
+        '409':
+          description: Constraint conflict
+        '500':
+          description: Internal server error
+
+  /events/{id}/images:
+    post:
+      summary: Upload an image to Cloudinary and attach to Event
+      parameters:
+        - in: path
+          name: id
           required: true
           schema:
             type: string
       requestBody:
         required: true
         content:
-          image/*:   # Cualquier imagen
+          application/octet-stream:
             schema:
               type: string
               format: binary
-              description: "Archivo de imagen (PNG, JPEG, GIF, WebP, etc.)"
       responses:
-        "201":
-          description: Image updated or created successfully
+        '201':
+          description: Image uploaded successfully
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ImageInfo"
-        "401":
-          description: Unauthorized. Token expired or invalid.
-        "500":
-          description: Internal server error              
+                $ref: '#/components/schemas/EventImage'
+        '400':
+          description: Image is required
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '500':
+          description: Internal server error
+
+  /events/{id}/images/{imageId}:
     delete:
-      summary: Delete product image
-      tags:
-        - Files - Get and Upload
-      security:
-        - bearerAuth: []
+      summary: Delete an EventImage from DB and Cloudinary
       parameters:
-        - name: imageName
-          in: path
+        - in: path
+          name: id
           required: true
           schema:
-            type: string   
+            type: string
+        - in: path
+          name: imageId
+          required: true
+          schema:
+            type: integer
       responses:
-        "200":
+        '200':
           description: Image deleted successfully
-        "401":
-          description: Unauthorized. Token expired or invalid.
-        "500":
-          description: Internal server error             
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Image not found
+        '500':
+          description: Internal server error
+
+  /files/events:
+    get:
+      summary: List all raw images from Cloudinary directly
+      security: []
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: A list of image resources
+        '500':
+          description: Internal server error
+    post:
+      summary: Upload an event image directly
+      requestBody:
+        required: true
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+      responses:
+        '201':
+          description: Image uploaded successfully
+        '400':
+          description: Image is required
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '500':
+          description: Internal server error
+          
+  /files/events/{imageName}:
+    get:
+      summary: Get an event image by name
+      security: []
+      parameters:
+        - in: path
+          name: imageName
+          required: true
+          schema:
+            type: string
+          description: Image Name
+      responses:
+        '200':
+          description: Image buffer
+        '404':
+          description: Image not found
+        '500':
+          description: Internal server error
+    put:
+      summary: Change an event image
+      parameters:
+        - in: path
+          name: imageName
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+      responses:
+        '201':
+          description: Image updated successfully
+        '400':
+          description: Image is required
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '500':
+          description: Internal server error

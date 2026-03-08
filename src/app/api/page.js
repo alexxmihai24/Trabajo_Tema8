@@ -24,7 +24,7 @@ function SwaggerDocs() {
 
     useEffect(() => {
         SwaggerUI({
-            url: "/openapi.yaml", // Especificación en archivo /public/openapi.yaml
+            url: "/openapi.yaml",
             domNode: uiRef.current,
             layout: "BaseLayout"
         });
