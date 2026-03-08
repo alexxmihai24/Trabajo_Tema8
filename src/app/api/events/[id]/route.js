@@ -9,18 +9,17 @@ export async function GET(request, { params }) {
 
 
     try {
-        const product = await prisma.product.findFirst({
+        const event = await prisma.event.findFirst({
             where: { OR: [{ id: idOrSlug }, { slug: idOrSlug }] },
             select: {
                 id: true,
                 title: true,
-                price: true,
                 description: true,
+                date: true,
+                location: true,
+                price: true,
                 slug: true,
-                stock: true,
-                sizes: true,
-                gender: true,
-                tags: true,
+                capacity: true,
                 images: { select: { url: true } },
                 user: {
                     select: {
@@ -34,19 +33,19 @@ export async function GET(request, { params }) {
             },
         });
 
-        if (!product) {
+        if (!event) {
             return NextResponse.json(
-                { message: "Product not found" },
+                { message: "Event not found" },
                 { status: 404 }
             );
         }
 
-        const formattedProduct = {
-            ...product,
-            images: product.images.map((image) => image.url),
+        const formattedEvent = {
+            ...event,
+            images: event.images.map((image) => image.url),
         };
         return NextResponse.json(
-            formattedProduct,
+            formattedEvent,
             { status: 200 }
         );
     } catch (error) {
@@ -61,7 +60,7 @@ export async function GET(request, { params }) {
 
 
 
-export async function PATCH(request, { params }) {
+export async function PUT(request, { params }) {
     const { id } = await params;
 
     const authHeader = request.headers.get("Authorization");
@@ -87,32 +86,31 @@ export async function PATCH(request, { params }) {
     }
 
     try {
-        const product = await prisma.product.findUnique({
+        const event = await prisma.event.findUnique({
             where: { id },
             include: { images: true }
         });
 
-        if (!product) {
+        if (!event) {
             return NextResponse.json(
-                { message: "Product not found" },
+                { message: "Event not found" },
                 { status: 404 }
             );
         }
 
         const body = await request.json();
-        const { title, price, description, slug, stock, sizes, gender, tags, images = [] } = body;
+        const { title, description, date, location, price, slug, capacity, images = [] } = body;
 
-        const updatedProduct = await prisma.product.update({
+        const updatedEvent = await prisma.event.update({
             where: { id },
             data: {
                 title,
-                price,
                 description,
+                ...(date && { date: new Date(date) }),
+                location,
+                price,
                 slug,
-                stock,
-                sizes,
-                gender,
-                tags,
+                capacity,
                 images: {
                     connectOrCreate: images.map(url => ({
                         where: { url },
@@ -131,7 +129,7 @@ export async function PATCH(request, { params }) {
         });
 
         return NextResponse.json(
-            updatedProduct,
+            updatedEvent,
             { status: 200 }
         );
 
@@ -174,16 +172,16 @@ export async function DELETE(request, { params }) {
 
 
     try {
-        const product = await prisma.product.findUnique({ where: { id } });
+        const event = await prisma.event.findUnique({ where: { id } });
 
-        if (!product) {
+        if (!event) {
             return NextResponse.json(
-                { message: "Product not found" },
+                { message: "Event not found" },
                 { status: 404 }
             );
         }
 
-        const deletedProduct = await prisma.product.delete({
+        const deletedEvent = await prisma.event.delete({
             where: { id },
             // incluimos las imágenes en la respuesta
             include: {
@@ -192,13 +190,13 @@ export async function DELETE(request, { params }) {
         });
 
         return NextResponse.json(
-            deletedProduct,
+            deletedEvent,
             { status: 200 }
         );
     } catch (error) {
         console.log(error);
         return NextResponse.json(
-            { error: "Product title or slug already exists" },
+            { error: "Event title or slug already exists" },
             { status: 409 }
         )
     }

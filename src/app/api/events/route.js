@@ -12,13 +12,12 @@ export async function GET(request) {
     const select = {
         id: true,
         title: true,
-        price: true,
         description: true,
+        date: true,
+        location: true,
+        price: true,
         slug: true,
-        stock: true,
-        sizes: true,
-        gender: true,
-        tags: true,
+        capacity: true,
         images: { select: { url: true } },
         user: {
             select: {
@@ -32,15 +31,15 @@ export async function GET(request) {
     };
 
     try {
-        const products = await prisma.product.findMany({ select, take: limit, skip: offset });
+        const events = await prisma.event.findMany({ select, take: limit, skip: offset });
 
-        const formattedProducts = products.map(product => ({
-            ...product,
-            images: product.images.map(image => image.url),
+        const formattedEvents = events.map(event => ({
+            ...event,
+            images: event.images.map(image => image.url),
         }));
 
         return NextResponse.json(
-            formattedProducts,
+            formattedEvents,
             { status: 200 }
         );
     } catch (error) {
@@ -80,25 +79,24 @@ export async function POST(request) {
     }
 
     try {
-        const { title, price, description, slug, stock, sizes, gender, tags, images } = await request.json();
+        const { title, description, date, location, price, slug, capacity, images } = await request.json();
 
-        if (!title || price === undefined || !slug || stock === undefined || !sizes || !gender || !tags || !images) {
+        if (!title || price === undefined || !slug || !date || !location || !images) {
             return NextResponse.json(
                 { error: "Missing data" },
                 { status: 400 }
             )
         }
 
-        const product = await prisma.product.create({
+        const event = await prisma.event.create({
             data: {
                 title,
-                price,
                 description,
+                date: new Date(date),
+                location,
+                price,
                 slug,
-                stock,
-                sizes,
-                gender,
-                tags,
+                capacity,
                 images: {
                     create: images.map(image => ({ url: image }))
                 },
@@ -110,13 +108,13 @@ export async function POST(request) {
             }
         });
         return NextResponse.json(
-            product,
+            event,
             { status: 201 }
         );
     } catch (error) {
         console.log(error);
         return NextResponse.json(
-            { error: "Product title or slug already exists" },
+            { error: "Event title or slug already exists" },
             { status: 409 }
         )
     }

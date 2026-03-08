@@ -1,4 +1,4 @@
-import { users, products, productImages } from './data.mjs';
+import { users, events, eventImages } from './data.mjs';
 
 import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 const resetDatabase = async () => {
     console.log("Reiniciando base de datos (TRUNCATE)...");
     // PostgreSQL
-    await prisma.$executeRaw`TRUNCATE TABLE "users", "products", "product_images" RESTART IDENTITY CASCADE;`;
+    await prisma.$executeRaw`TRUNCATE TABLE "users", "events", "event_images" RESTART IDENTITY CASCADE;`;
 }
 
 
@@ -21,15 +21,15 @@ async function main() {
         skipDuplicates: true,
     });
 
-    console.log("Añadiendo productos...")
-    await prisma.product.createMany({
-        data: products,
+    console.log("Añadiendo eventos...")
+    await prisma.event.createMany({
+        data: events,
         skipDuplicates: true,
     });
 
     console.log("Añadiendo imágenes...")
-    await prisma.productImage.createMany({
-        data: productImages,
+    await prisma.eventImage.createMany({
+        data: eventImages,
         skipDuplicates: true,
     });
 

@@ -15,36 +15,35 @@ model User {
   isActive Boolean  @default(true)
   roles    String[] @default(["user"])
 
-  products Product[]
+  events Event[]
 
   @@map("users")
 }
 
-model Product {
+model Event {
   id          String   @id @default(uuid())
   title       String   @unique
-  price       Float    @default(0)
   description String?
+  date        DateTime
+  location    String
+  price       Float    @default(0)
   slug        String   @unique
-  stock       Int      @default(0)
-  sizes       String[]
-  gender      String
-  tags        String[] @default([])
+  capacity    Int      @default(0)
 
   userId String?
   user   User?   @relation(fields: [userId], references: [id])
 
-  images ProductImage[]
+  images EventImage[]
 
-  @@map("products")
+  @@map("events")
 }
 
-model ProductImage {
+model EventImage {
   id  Int    @id @default(autoincrement())
   url String @unique
 
-  productId String?
-  product   Product? @relation(fields: [productId], references: [id], onDelete: Cascade)
+  eventId String?
+  event   Event?  @relation(fields: [eventId], references: [id], onDelete: Cascade)
 
-  @@map("product_images")
+  @@map("event_images")
 }
